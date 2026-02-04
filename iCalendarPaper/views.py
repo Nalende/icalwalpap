@@ -353,16 +353,23 @@ The sticker should be centered with plenty of white space around it."""
             align="center"
         )
         
-        # RGB'ye dönüştür (PNG kaydetmek için)
+        # RGB'ye dönüştür (JPEG kaydetmek için)
         img = img.convert('RGB')
 
-        # E. Sonucu Döndür
+        # E. Sonucu Döndür (iOS Shortcuts uyumlu)
         buf = io.BytesIO()
-        img.save(buf, format='PNG', quality=95)
+        img.save(buf, format='JPEG', quality=90)  # JPEG daha hızlı ve küçük
         buf.seek(0)
         
-        resp = make_response(send_file(buf, mimetype='image/png'))
+        resp = make_response(send_file(
+            buf, 
+            mimetype='image/jpeg',
+            as_attachment=False,
+            download_name='wallpaper.jpg'
+        ))
         resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        resp.headers['Content-Type'] = 'image/jpeg'
+        resp.headers['Content-Disposition'] = 'inline; filename=wallpaper.jpg'
         return resp
         
     except Exception as e: 
