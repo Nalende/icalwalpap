@@ -33,7 +33,7 @@ Yapay zeka defterinizi ve Google Takviminizi kullanarak kişiselleştirilmiş, e
 - `requirements.txt`: Gerekli kütüphaneler.
 - `sessions.json`: Kullanıcı oturum verileri (temiz başlar).
 
-##Önizleme ve deneyim adresi:
+## Önizleme ve deneyim adresi:
 
 https://icalwalpap.onrender.com
 
