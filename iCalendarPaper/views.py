@@ -17,6 +17,31 @@ SESSIONS_FILE = os.path.join(BASE_DIR, "sessions.json")
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
+# Environment Variables'dan OAuth credentials oku (Render.com için)
+def get_client_config():
+    """
+    Environment variables'dan OAuth credentials oku.
+    Fallback: Local development için credentials.json kullan.
+    """
+    client_id = os.environ.get('GOOGLE_CLIENT_ID')
+    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
+    
+    if client_id and client_secret:
+        # Production: Environment variables kullan
+        return {
+            "web": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token"
+            }
+        }
+    elif os.path.exists(CLIENT_SECRETS_FILE):
+        # Local development: credentials.json kullan
+        with open(CLIENT_SECRETS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return None
+
 # 2. SESSION YÖNETİMİ
 sessions_lock = threading.Lock()
 _SESSIONS_CACHE = {}
@@ -42,7 +67,11 @@ def home(): return render_template('index.html')
 
 @app.route('/oauth/init', methods=['POST'])
 def oauth_init():
-    flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
+    client_config = get_client_config()
+    if not client_config:
+        return jsonify({'error': 'OAuth credentials bulunamadı. GOOGLE_CLIENT_ID ve GOOGLE_CLIENT_SECRET ayarlanmalı.'}), 500
+    
+    flow = Flow.from_client_config(client_config, scopes=SCOPES)
     flow.redirect_uri = url_for('oauth_callback', _external=True)
     auth_url, state = flow.authorization_url(access_type='offline', prompt='consent')
     session['oauth_state'] = state
@@ -50,7 +79,11 @@ def oauth_init():
 
 @app.route('/oauth/callback')
 def oauth_callback():
-    flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
+    client_config = get_client_config()
+    if not client_config:
+        return "OAuth credentials bulunamadı", 500
+    
+    flow = Flow.from_client_config(client_config, scopes=SCOPES)
     flow.redirect_uri = url_for('oauth_callback', _external=True)
     flow.fetch_token(authorization_response=request.url)
     return f"""<script>window.opener.postMessage({{type:'oauth_success',token:{json.dumps(flow.credentials.to_json())}}},'*');window.close();</script>"""
