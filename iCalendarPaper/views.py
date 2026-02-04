@@ -276,10 +276,10 @@ CRITICAL RULES:
 Aspect ratio: 9:16 portrait for mobile wallpaper.
 The sticker should be centered with plenty of white space around it."""
 
-        img_resp = client.models.generate_images(
+        img_resp = client.models.generate_image(
             model="imagen-4.0-generate-001", 
             prompt=imagen_prompt,
-            config=types.GenerateImagesConfig(
+            config=types.GenerateImageConfig(
                 aspect_ratio="9:16",
                 number_of_images=1
             )
