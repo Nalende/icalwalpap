@@ -33,7 +33,3 @@ Yapay zeka defterinizi ve Google Takviminizi kullanarak kişiselleştirilmiş, e
 - `requirements.txt`: Gerekli kütüphaneler.
 - `sessions.json`: Kullanıcı oturum verileri (temiz başlar).
 
-## Notlar
-
-- `credentials.json` dosyanızı **ASLA** paylaşmayın veya GitHub'a yüklemeyin.
-- `.gitignore` dosyası gereksiz dosyaların yüklenmesini engeller.
