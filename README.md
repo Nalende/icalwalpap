@@ -41,44 +41,79 @@ Yapay zeka defterinizi ve Google Takviminizi kullanarak kişiselleştirilmiş, e
 🌐 Kullanıcı Tarafı (Web Arayüzü)
 
 -Kullanıcı siteye girer: https://icalwalpap.onrender.com
+
 -iPhone modelini seçer: Ekran çözünürlüğü belirlenir (örn: 1179x2556)
+
 -Gemini API Key'ini girer: Kullanıcı kendi API anahtarını kullanır
+
 -Google Takvim'e bağlanır:
+
 -"TAKVİME BAĞLAN" butonuna tıklar
+
 -Google OAuth popup açılır
+
 -Kullanıcı izin verir
+
 -OAuth token alınır ve saklanır
+
 -Master Link oluşturur:
+
 -Tüm bilgiler (çözünürlük, API key, OAuth token) sunucuya kaydedilir
+
 -Benzersiz bir session ID oluşturulur
+
 -Master Link kullanıcıya verilir: https://icalwalpap.onrender.com/generate/[session-id]
 
 📱 iOS Shortcuts Tarafı (Otomatik Çalışma)
 
 *Shortcuts linki çağırır: Her gün belirlenen saatte /generate/[session-id] adresine istek atar
+
 *Sunucu takvimi çeker:
+
 *Google Calendar API ile 30 günlük etkinlikler alınır
+
 *Başlık, konum, açıklama, tarih bilgileri çıkarılır
+
 *24 saat kuralı uygulanır:
+
 *Eğer bir etkinlik 24 saat içindeyse → O etkinliğe odaklanılır
+
 *Değilse → Gemini en önemli etkinliği seçer
+
 *Gemini analiz yapar:
+
 *Etkinlik türünü belirler (doğum günü, toplantı, randevu vb.)
+
 *Mood seçer (dark_humor, sarcastic, cheerful vb.)
+
 *Türkçe mesaj yazar (max 12 kelime)
+
 *Sticker konsepti oluşturur (İngilizce)
+
 *Uygun Google Font önerir
+
 *Imagen görsel üretir:
+
 *Sticker tarzı minimalist görsel oluşturulur
+
 *Beyaz arka plan, ince çizgili tasarım
+
 *9:16 dikey format (telefon wallpaper)
+
 *PIL ile metin eklenir:
+
 *Google Font indirilir
+
 *Türkçe mesaj görselin alt kısmına yazılır
+
 *Gölge efekti eklenir
+
 *JPEG olarak döndürülür:
+
 *iOS Shortcuts görseli alır
+
 *Wallpaper olarak ayarlar
+
 
 
 https://icalwalpap.onrender.com üzerinden deneyimleyebilirsiniz.
