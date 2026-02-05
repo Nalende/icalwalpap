@@ -95,6 +95,11 @@ Visit `http://localhost:5000` in your browser.
 *(Screenshots of the beautiful UI and generated wallpapers coming soon!)*
 
 ---
+## Features
+
+* Technical Overview
+While the wallpaper automation workflow via Shortcuts is inspired by thelifecalendar, the underlying AI rendering and calendar generation engine is a completely original development. This project combines a proven delivery mechanism with a custom-built backend to provide a unique and seamless automated experience.
+
 
 ## 🤝 Contributing
 
