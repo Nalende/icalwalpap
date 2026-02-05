@@ -205,7 +205,7 @@ GÖREV 5: MOOD'a uygun Google Font (GERÇEK font adı, REGULAR weight):
 🎯 ÖNEMLİ: Mesaj, sticker ve font AYNI MOOD'u yansıtmalı! ÖZGÜN OL!
 
 SADECE JSON formatında cevap ver:
-{"event_name": "...", "mood": "dark_humor/cheerful/serious/cute/sarcastic/motivational", "message": "...", "sticker_concept": "...", "google_font": "Font Adı"}"""
+{{"event_name": "...", "mood": "dark_humor/cheerful/serious/cute/sarcastic/motivational", "message": "...", "sticker_concept": "...", "google_font": "Font Adı"}}"""
 
 
 def build_imagen_prompt(sticker_concept: str) -> str:
