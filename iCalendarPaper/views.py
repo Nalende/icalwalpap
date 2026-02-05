@@ -13,6 +13,7 @@ import os
 import re
 import textwrap
 import threading
+import time
 import uuid
 from datetime import datetime, timezone, timedelta
 from functools import lru_cache
@@ -141,6 +142,7 @@ def build_gemini_prompt(selected_event_info: str, use_next_event: bool) -> str:
     Tek nokta: Hem generate hem debug aynı prompt'u kullanır.
     """
     return f"""Sen bir tasarım direktörüsün. Görsel, metin ve font arasında MÜKEMMEL UYUM sağlayacaksın.
+YARATICILIK ÇOK ÖNEMLİ: Sıradanlıktan kaçın, özgün ve akılda kalıcı ol!
 
 Kullanıcının takvim bilgileri:
 {selected_event_info}
@@ -158,75 +160,87 @@ GÖREV 1: En önemli etkinliği seç.
 
 GÖREV 2: Bu etkinlik için bir MOOD/ENERJİ belirle:
 ⭐ TERCİH EDİLEN (yüksek ihtimalle bunlardan birini seç):
-- "dark_humor" = Kara mizah, alaycı (ağlayan pasta, kaçan takvim, zombie ikonu)
-- "sarcastic" = İğneleyici, ironik (göz deviren emoji, bored yüz)
+- "dark_humor" = Kara mizah, alaycı, absürt
+- "sarcastic" = İğneleyici, ironik, sivri dilli
 
 DİĞER SEÇENEKLER:
-- "cheerful" = Neşeli, pozitif (gülen yüz, konfeti)
-- "serious" = Ciddi, resmi (düz çizgiler, minimal)
-- "cute" = Ponçik, tatlı (yuvarlak hatlar, sevimli)
-- "motivational" = Motive edici, güçlü (yumruk, alev)
+- "cheerful" = Neşeli, pozitif, enerjik
+- "serious" = Ciddi, profesyonel, ağırbaşlı
+- "cute" = Ponçik, tatlı, sevimli
+- "motivational" = Motive edici, güçlü, ilham verici
 
-GÖREV 3: Seçtiğin MOOD'a UYGUN Türkçe mesaj yaz (max 12 kelime).
-- Mesaj ve görsel AYNI enerjiyi taşımalı!
-- DARK HUMOR VE SARCASTİK MESAJLAR TERCİH EDİLİR!
-- dark_humor: "Hediye almayı unutursan, arkadaşlığınız biter.", "Geç kalırsan, seni beklemezler."
-- sarcastic: "Evet, yine bir toplantı. Şaşırdın mı?", "Vay be, yine bir randevu. Heyecan verici."
-- cheerful: "Harika bir gün olacak, keyfine bak!"
-- serious: "Toplantını unutma. Hazırlıklı git."
-- cute: "Bugün senin günün, süper olacak!"
-- motivational: "Bugün fark yaratacaksın, git ve kazan!"
+GÖREV 3: YARATICI ve ÖZGÜN Türkçe mesaj yaz (max 12 kelime).
+💡 YARATICILIK KURALLARI:
+- BEKLENMEDİK açılar kullan, klişelerden kaçın
+- ETKİNLİĞE ÖZGÜ detaylar ekle (randevu ise doktor/avukat/kuaför fark eder!)
+- CESUR ol, sınırları zorla (ama saygılı kal)
+- Örneklerden ESINLEN ama KOPYALAMA - kendi versiyonunu yarat!
 
-GÖREV 4: Seçtiğin MOOD'a UYGUN sticker konsepti yaz (İNGİLİZCE, max 20 kelime).
-- Mesajla AYNI enerjiyi taşımalı!
-- dark_humor: "a birthday cake crying because no one came"
-- cheerful: "a happy dancing calendar throwing confetti"
-- serious: "a clean minimalist briefcase with a clock"
-- cute: "a chubby heart character hugging a gift box"
-- sarcastic: "an eye-rolling clock looking bored"
-- motivational: "a fist breaking through a wall"
+İLHAM ÖRNEKLERI (bunları kullanma, benzeri yarat!):
+- dark_humor: "İlaçlarını al, yoksa canavar geri gelir.", "Uyuyamazsan sabaha kadar bekle."
+- sarcastic: "Bir saatlik toplantı. Beş dakikalık konu.", "E-posta da yollayabilirdin aslında."
+- cheerful: "Konfetiler patlarken kendini hisset!", "Bugün senin şovun başlıyor!"
+- serious: "Hazırlıksız gidersen pişman olursun.", "Profesyonellik zamanı, odaklan."
+- cute: "Küçük kalpler büyük sevinçler getiriyor!", "Bugün seni gülümseten şeyler olacak!"
+- motivational: "Bugün başarının tadını çıkaracaksın.", "Sen bu işi halledecek güçtesin!"
 
-GÖREV 5: Bu tasarıma uygun Google Font öner (GERÇEK font adı):
-⛔ YASAK: Bold, kalın, italik fontlar KULLANMA!
-✅ SADECE REGULAR weight, okunabilir fontlar:
-- "Nunito", "Poppins", "Open Sans", "Roboto", "Lato", "Montserrat"
-- "Noto Sans", "Source Sans Pro", "Inter", "Quicksand"
-- "Comfortaa", "Varela Round", "Mulish", "Karla"
+GÖREV 4: YARATICI ve GÖRSELLEŞTİRİLEBİLİR sticker konsepti (İNGİLİZCE, max 25 kelime).
+💡 STICKER KURALLARI:
+- Tekil, MERKEZİ karakter/obje (takvim, saat, kalp, pasta, kalem, vb)
+- Absürt/unexpected DETAYLAR ekle
+- DUYGU ve HAREKET belirt (crying, dancing, melting, exploding)
+- Clean, white/grey LINES on SOLID BLACK background
 
-❗ TÜRKÇE KARAKTER DESTEKLEYEN FONTLARI SEÇ!
+İLHAM ÖRNEKLERI (bunları kullanma, benzeri yarat!):
+- dark_humor: "a melting clock dripping into a coffee cup", "a calendar running away on tiny legs"
+- cheerful: "a star-shaped cookie celebrating with sparkles", "a bouncing heart throwing tiny gifts"
+- serious: "a geometric briefcase with sharp clean edges", "a minimalist pen standing tall"
+- cute: "a smiling donut hugging a tiny spoon", "a chubby cloud raining hearts"
+- sarcastic: "a yawning moon covering its mouth", "a bored pencil lying flat"
+- motivational: "a lightning bolt cracking through darkness", "a rising sun with strong rays"
 
-ÖNEMLİ: Mesaj, sticker ve font AYNI MOOD'u yansıtmalı!
+GÖREV 5: MOOD'a uygun Google Font (GERÇEK font adı, REGULAR weight):
+✅ Türkçe destekli: "Nunito", "Poppins", "Open Sans", "Roboto", "Lato", "Montserrat", "Noto Sans", "Source Sans Pro", "Inter", "Quicksand", "Comfortaa", "Varela Round", "Mulish", "Karla"
+
+🎯 ÖNEMLİ: Mesaj, sticker ve font AYNI MOOD'u yansıtmalı! ÖZGÜN OL!
 
 SADECE JSON formatında cevap ver:
-{{"event_name": "...", "mood": "dark_humor/cheerful/serious/cute/sarcastic/motivational", "message": "...", "sticker_concept": "...", "google_font": "Font Adı"}}"""
+{"event_name": "...", "mood": "dark_humor/cheerful/serious/cute/sarcastic/motivational", "message": "...", "sticker_concept": "...", "google_font": "Font Adı"}"""
 
 
 def build_imagen_prompt(sticker_concept: str) -> str:
     """Imagen için görsel üretim prompt'unu oluşturur."""
-    return f"""Sticker design, minimalist and quirky illustration style, showcased on a solid BLACK background (#000000).
+    return f"""Create a PURE DIE-CUT STICKER on a SOLID BLACK BACKGROUND (#000000).
 
-MAIN SUBJECT: {sticker_concept}
+🎯 MAIN SUBJECT: {sticker_concept}
 
-STYLE REQUIREMENTS:
-- Clean white illustration with minimal grey shading lines
-- NO logos, NO text, NO letters, NO numbers, NO symbols
-- Thin, consistent line work OR flat color shapes
-- Die-cut sticker appearance around the main subject
-- Simple and flat lighting suitable for graphic illustration
+🎨 VISUAL STYLE:
+- Clean WHITE or LIGHT GREY illustration (NO other colors)
+- Minimalist line art OR simple flat shapes
+- Thin, consistent strokes with subtle grey shading
+- Die-cut sticker aesthetic: subject is ISOLATED from background
+- Quirky, playful, internet culture vibe
 
-MOOD: Surreal, humorous, relaxed, internet culture aesthetic
-- Captures a specific kind of cool, detached humor
-- Slightly absurd or quirky interpretation
+⚫ BACKGROUND RULES - CRITICAL:
+- ENTIRE background MUST be SOLID BLACK (#000000)
+- NO gradients, NO textures, NO patterns in background
+- Sticker subject is the ONLY visible element
+- Maximum contrast: white/grey subject on pure black
+- Die-cut appearance: as if the sticker was physically cut out and placed on black surface
 
-CRITICAL RULES:
-- ABSOLUTELY NO TEXT anywhere
-- NO watermarks, NO signatures
-- Clean, minimal, sophisticated
-- White/light grey color palette only
-- BACKGROUND MUST BE SOLID BLACK (#000000)
+🚫 FORBIDDEN:
+- ABSOLUTELY NO text, letters, numbers, symbols, words
+- NO logos, watermarks, signatures
+- NO additional background elements (stars, dots, lines)
+- NO complex details - keep it SIMPLE and ICONIC
 
-Aspect ratio: 1:1 Square.
-The sticker should be centered with plenty of black space around it."""
+📐 COMPOSITION:
+- Aspect ratio: 1:1 Square
+- Subject centered with generous black space around it
+- Focus on strong, recognizable silhouette
+- Playful expression/pose that matches the mood
+
+✨ MOOD: Surreal, witty, slightly absurd, memorable, shareable"""
 
 
 @lru_cache(maxsize=20)
@@ -499,14 +513,31 @@ def generate_wallpaper(session_id: str):
             ]) or "Önümüzdeki 30 gün için planlanmış etkinlik yok."
             selected_event_info = events_summary
 
-        # B. Gemini Pro ile Etkinlik Analizi (ortak prompt)
+        # B. Gemini Pro ile Etkinlik Analizi (retry ile)
         client = genai.Client(api_key=data['api_key'])
         analyze_prompt = build_gemini_prompt(selected_event_info, use_next_event)
 
-        analysis_resp = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=analyze_prompt
-        )
+        # Retry mekanizması - rate limit için
+        max_retries = 3
+        retry_delay = 2  # başlangıç gecikmesi (saniye)
+        
+        for attempt in range(max_retries):
+            try:
+                analysis_resp = client.models.generate_content(
+                    model="gemini-2.0-flash",
+                    contents=analyze_prompt
+                )
+                break  # Başarılı olursa döngüden çık
+            except Exception as e:
+                error_msg = str(e)
+                if '429' in error_msg or 'RESOURCE_EXHAUSTED' in error_msg:
+                    if attempt < max_retries - 1:
+                        # Exponential backoff: 2s, 4s, 8s
+                        time.sleep(retry_delay)
+                        retry_delay *= 2
+                        continue
+                # Başka hata veya son deneme - hatayı fırlat
+                raise
 
         # JSON parse
         response_text = analysis_resp.text.strip()
