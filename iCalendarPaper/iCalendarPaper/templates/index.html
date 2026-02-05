@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Samantha</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #050508;
+            --surface: rgba(20, 20, 25, 0.6);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --primary: #8b5cf6;
+            --text: #ffffff;
+            --text-dim: #a1a1aa;
+            /* Daha belirgin renk, opacity yerine */
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        /* ═══════════════════════════════════════
+           PERFORMANCE OPTIMIZED LAYERS
+        ═══════════════════════════════════════ */
+
+        /* Layer 1: Static Background Gradient (Cheap) */
+        .universe {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: radial-gradient(circle at 50% -20%, #1e1b4b, #050508 60%);
+            /* Hareketli orb'ları kaldırdık - GPU maliyeti yüksek */
+        }
+
+        /* Layer 2: Canvas (Particles) - Optimized */
+        #particleCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Layer 3: Application UI */
+        .app-container {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            /* backdrop-filter kaldırdık - çok pahalı */
+        }
+
+        /* Header */
+        .header {
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+
+        /* Nav Pills - Simplified */
+        .nav-pills {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px;
+            border-radius: 100px;
+            border: 1px solid var(--surface-border);
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: color 0.2s, background 0.2s;
+            /* Sadece gerekli property'ler */
+        }
+
+        .nav-item:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            color: #000;
+            background: #fff;
+        }
+
+        /* Stage Area */
+        .stage {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            /* Taşmayı engelle */
+            contain: content;
+            /* Browser'a ipucu: içerik dışarı taşmaz */
+        }
+
+        .slider-track {
+            display: flex;
+            align-items: center;
+            padding-left: calc(50vw - 250px);
+            transition: transform 0.6s var(--ease-smooth);
+            /* Süre kısaltıldı */
+            will-change: transform;
+            /* GPU Optimization */
+        }
+
+        /* Card Wrapper - Optimized */
+        .card-wrapper {
+            width: 500px;
+            /* Height auto yaptık, içerik kadar yer kaplasın, render alanı azalsın */
+            min-height: 500px;
+            margin-right: 40px;
+            position: relative;
+            transition: opacity 0.5s, transform 0.5s, filter 0.5s;
+            /* Basitleştirilmiş transform */
+            transform-origin: center left;
+        }
+
+        .card-wrapper:not(.active) {
+            opacity: 0.4;
+            transform: scale(0.95);
+            /* RotateY kaldırdık - 3D transform pahalı */
+            pointer-events: none;
+            /* Filter blur kaldırdık - çok pahalı */
+        }
+
+        .card-wrapper.active {
+            opacity: 1;
+            transform: scale(1);
+            z-index: 5;
+            pointer-events: auto;
+        }
+
+        /* Glass Card -> Surface Card (Performans için) */
+        .glass-card {
+            background: #111115;
+            /* Solid renk + hafif alpha yerine solid tercih edilebilir ama estetik için koyu solid'e yakın */
+            border: 1px solid var(--surface-border);
+            border-radius: 24px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            /* Box-shadow azalttık */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            /* Backdrop-filter TAMAMEN KALDIRILDI - PERFORMANS KATİLİ */
+        }
+
+        .step-badge {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        p {
+            font-size: 1rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+            margin-bottom: 32px;
+        }
+
+        /* Inputs - Hardware Accelerated */
+        select,
+        input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--surface-border);
+            color: #fff;
+            padding: 16px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            cursor: pointer;
+        }
+
+        select:focus,
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        select option {
+            background: #111115;
+            color: #fff;
+        }
+
+        /* Buttons */
+        .btn-modern {
+            padding: 16px 32px;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #000;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-oauth {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            justify-content: center;
+            border: 1px solid var(--surface-border);
+        }
+
+        .btn-oauth:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-oauth.connected {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .nav-actions {
+            margin-top: 32px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* Result Box */
+        .result-box {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .link-code {
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 16px;
+            border-radius: 8px;
+            color: var(--primary);
+            margin: 20px 0;
+            word-break: break-all;
+            border: 1px dashed rgba(139, 92, 246, 0.3);
+            font-size: 0.9rem;
+        }
+
+        .hint-text {
+            display: flex;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        .hint-text a {
+            color: #fff;
+            text-decoration: none;
+            border-bottom: 1px solid #fff;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .slider-track {
+                padding-left: 20px;
+            }
+
+            .card-wrapper {
+                width: 85vw;
+                margin-right: 20px;
+                min-height: auto;
+            }
+
+            .nav-pills {
+                display: none;
+            }
+
+            .glass-card {
+                padding: 32px 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="universe"></div>
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="app-container">
+        <header class="header">
+            <div class="logo">Samantha</div>
+            <div class="nav-pills">
+                <div class="nav-item active" onclick="goto(0)">Cihaz</div>
+                <div class="nav-item" onclick="goto(1)">API</div>
+                <div class="nav-item" onclick="goto(2)">Takvim</div>
+                <div class="nav-item" onclick="goto(3)">Bitir</div>
+            </div>
+        </header>
+
+        <div class="stage">
+            <div class="slider-track" id="track">
+
+                <!-- CARD 1 -->
+                <div class="card-wrapper active">
+                    <div class="glass-card">
+                        <div>
+                            <span class="step-badge">Adım 01</span>
+                            <h2>Model Seçimi</h2>
+                            <p>Ekranına kusursuz oturması için iPhone modelini seç.</p>
+                            <select id="iphoneModel">
+                                <option value="">Model Seçin...</option>
+                                <option value="1179x2556">iPhone 15 Pro Max</option>
+                                <option value="1179x2556">iPhone 15 Pro / Plus</option>
+                                <option value="1170x2532">iPhone 15</option>
+                                <option value="1179x2556">iPhone 14 Pro Max</option>
+                                <option value="1179x2556">iPhone 14 Pro</option>
+                                <option value="1170x2532">iPhone 14 / 13</option>
+                                <option value="1284x2778">iPhone 13 / 12 Pro Max</option>
+                                <option value="1125x2436">iPhone 11 Pro / X / XS</option>
+                            </select>
+                        </div>
+                        <div class="nav-actions">
+                            <button id="btn1" class="btn-modern btn-primary" onclick="goto(1)" disabled>
+                                Devam Et
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2 -->
+                <div class="card-wrapper">
+                    <div class="glass-card">
+                        <div>
+                            <span class="step-badge">Adım 02</span>
+                            <h2>Zeka Motoru</h2>
+                            <p>Samantha'nın düşünebilmesi için Gemini API anahtarı gerekli.</p>
+                            <input type="text" id="geminiApi" placeholder="AIzaSy..." autocomplete="off">
+                            <div class="hint-text">
+                                <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio'dan
+                                    Ücretsiz Al</a>
+                            </div>
+                        </div>
+                        <div class="nav-actions">
+                            <button id="btn2" class="btn-modern btn-primary" onclick="goto(2)" disabled>
+                                Devam Et
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 3 -->
+                <div class="card-wrapper">
+                    <div class="glass-card">
+                        <div>
+                            <span class="step-badge">Adım 03</span>
+                            <h2>Bağlantı</h2>
+                            <p>Sana özel içerik üretmek için takvimine okuma izni ver.</p>
+                            <button id="oauthBtn" class="btn-modern btn-oauth">
+                                Google Takvim ile Bağlan
+                            </button>
+                        </div>
+                        <div class="nav-actions">
+                            <button id="btn3" class="btn-modern btn-primary" onclick="goto(3)" disabled>
+                                Devam Et
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 4 -->
+                <div class="card-wrapper">
+                    <div class="glass-card">
+                        <div>
+                            <span class="step-badge">Final</span>
+                            <h2>Oluştur</h2>
+                            <p>Linkin için özel bir isim belirle (isteğe bağlı).</p>
+                            <input type="text" id="customId" placeholder="samantha-ozel">
+                        </div>
+                        <div class="nav-actions">
+                            <button id="createBtn" class="btn-modern btn-primary">
+                                ✨ Oluştur
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 5 -->
+                <div class="card-wrapper">
+                    <div class="glass-card">
+                        <div class="result-box">
+                            <div style="font-size: 3rem; margin-bottom: 20px;">🎉</div>
+                            <h2>Hazırsınız!</h2>
+                            <p>Samantha artık yaşıyor.</p>
+                            <div class="link-code" id="masterLink">...</div>
+                            <button id="copyBtn" class="btn-modern btn-oauth">Kopyala</button>
+                            <p style="font-size: 0.8rem; margin-top: 20px; color: var(--text-dim)">
+                                iOS Kestirmeler'de "URL'den İçerik Al" komutu ile kullanın.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════
+        // PERFORMANCE OPTIMIZED JS
+        // ═══════════════════════════════════════
+
+        // 1. Optimized Particle System
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d', { alpha: true }); // Alpha optimize
+        let width, height;
+        let particles = [];
+        // Mobil için 30, masaüstü için 60 partikül (eskiden 100'dü)
+        const PARTICLE_COUNT = window.innerWidth < 768 ? 30 : 60;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', () => {
+            resize();
+            initParticles();
+        });
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.2; // Hız azaltıldı
+                this.vy = (Math.random() - 0.5) * 0.2;
+                this.size = Math.random() * 2;
+                this.alpha = Math.random() * 0.5 + 0.1;
+                this.t = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                // Basit fizik, mouse etkileşimi kaldırıldı (CPU tasarrufu)
+                this.x += this.vx;
+                this.y += this.vy;
+                this.t += 0.02;
+
+                // Opacity oscillation
+                this.alpha += Math.sin(this.t) * 0.005;
+
+                // Wrap
+                if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) this.reset();
+            }
+
+            draw(ctx) {
+                // Tek renk, fillStyle değiştirmek pahalıdır, loop dışına alınabilir ama alpha değişiyor
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(this.alpha)})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Batch drawing could be optimized but simple loop is fine for <100 particles
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.update();
+                p.draw(ctx);
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // Init
+        resize();
+        initParticles();
+        animate();
+
+
+        // 2. Logic & Interactions
+        const track = document.getElementById('track');
+        const navItems = document.querySelectorAll('.nav-item');
+        const cards = document.querySelectorAll('.card-wrapper');
+        let currentSlide = 0;
+
+        function goto(index) {
+            currentSlide = index;
+            // 500 card + 40 margin = 540px
+            const offset = index * 540;
+            track.style.transform = `translate3d(-${offset}px, 0, 0)`; // translate3d forces GPU
+
+            // Class switching (dom manipulation) minimized
+            cards.forEach((c, i) => {
+                if (i === index && !c.classList.contains('active')) c.classList.add('active');
+                else if (i !== index && c.classList.contains('active')) c.classList.remove('active');
+            });
+
+            navItems.forEach((n, i) => {
+                if (i === index && !n.classList.contains('active')) n.classList.add('active');
+                else if (i !== index && n.classList.contains('active')) n.classList.remove('active');
+            });
+        }
+
+        // --- FORM LOGIC (UNCHANGED BUT CLEANER) ---
+        let oauthToken = null;
+
+        // Element caching
+        const el = {
+            iphone: document.getElementById('iphoneModel'),
+            gemini: document.getElementById('geminiApi'),
+            oauthBtn: document.getElementById('oauthBtn'),
+            createBtn: document.getElementById('createBtn'),
+            copyBtn: document.getElementById('copyBtn'),
+            masterLink: document.getElementById('masterLink'),
+            customId: document.getElementById('customId'),
+            btn1: document.getElementById('btn1'),
+            btn2: document.getElementById('btn2'),
+            btn3: document.getElementById('btn3')
+        };
+
+        el.iphone.addEventListener('change', () => el.btn1.disabled = !el.iphone.value);
+        el.gemini.addEventListener('input', () => el.btn2.disabled = !el.gemini.value.trim());
+
+        el.oauthBtn.addEventListener('click', async () => {
+            try {
+                const res = await fetch('/oauth/init', { method: 'POST' });
+                const data = await res.json();
+                const w = 500, h = 600;
+                const left = (screen.width - w) / 2;
+                const top = (screen.height - h) / 2;
+                window.open(data.auth_url, 'OAuth', `width=${w},height=${h},left=${left},top=${top}`);
+                window.addEventListener('message', (e) => {
+                    if (e.data.type === 'oauth_success') {
+                        oauthToken = e.data.token;
+                        el.oauthBtn.classList.add('connected');
+                        el.oauthBtn.textContent = 'Bağlandı ✓';
+                        el.btn3.disabled = false;
+                    }
+                });
+            } catch { alert('Hata'); }
+        });
+
+        el.createBtn.addEventListener('click', async () => {
+            el.createBtn.textContent = '...';
+            const [w, h] = el.iphone.value.split('x');
+            try {
+                const res = await fetch('/create-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        width: parseInt(w), height: parseInt(h),
+                        api_key: el.gemini.value.trim(),
+                        oauth_token: oauthToken,
+                        custom_id: el.customId.value.trim() || undefined
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    el.masterLink.textContent = data.master_link;
+                    goto(4);
+                } else {
+                    alert(data.error);
+                    el.createBtn.textContent = '✨ Oluştur';
+                }
+            } catch {
+                alert('Hata');
+                el.createBtn.textContent = '✨ Oluştur';
+            }
+        });
+
+        el.copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(el.masterLink.textContent);
+            el.copyBtn.textContent = 'Kopyalandı';
+            setTimeout(() => el.copyBtn.textContent = 'Kopyala', 2000);
+        });
+
+    </script>
+</body>
+
+</html>
