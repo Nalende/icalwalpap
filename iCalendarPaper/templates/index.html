@@ -380,24 +380,21 @@
             .card-wrapper {
                 width: 100%;
                 min-height: auto;
-                margin: 0;
-                position: absolute;
-                left: 0;
-                right: 0;
-                top: 50%;
-                transform: translateY(-50%);
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 0.3s ease;
+                margin: 0 auto 20px;
                 padding: 0 20px;
+                /* Hide inactive cards but maintain layout space */
+                max-height: 0;
+                overflow: hidden;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, max-height 0.3s ease, visibility 0.3s;
             }
 
             .card-wrapper.active {
-                position: relative;
-                top: auto;
-                transform: none;
+                max-height: 2000px;
+                /* Large enough to fit any card */
                 opacity: 1;
-                pointer-events: auto;
+                visibility: visible;
             }
 
             .glass-card {
