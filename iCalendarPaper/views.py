@@ -523,10 +523,10 @@ def generate_wallpaper(session_id: str):
         # C. Imagen ile Sticker Tarzı Görsel Üretimi (ortak prompt)
         imagen_prompt = build_imagen_prompt(sticker_concept)
 
-        img_resp = client.models.generate_images(
+        img_resp = client.models.generate_image(
             model="imagen-4.0-generate-001",
             prompt=imagen_prompt,
-            config=types.GenerateImagesConfig(
+            config=types.GenerateImageConfig(
                 aspect_ratio="1:1",
                 number_of_images=1
             )
