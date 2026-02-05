@@ -1,122 +1,69 @@
 # iCalendarPaper - AI Wallpaper Generator
 
-Yapay zeka defterinizi ve Google Takviminizi kullanarak kişiselleştirilmiş, estetik duvar kağıtları oluşturur.
+iCalendarPaper is a Flask-based web application that generates personalized, aesthetic wallpapers by integrating with Google Calendar. It uses Google Gemini for context-aware mood analysis and Google Imagen for creating unique sticker-style illustrations.
 
-## Özellikler
+## Features
 
-- **Google Takvim Entegrasyonu**: Yaklaşan etkinlikleri otomatik çeker.
-- **Akıllı Önceliklendirme**: Doğum günleri, yıldönümleri ve acil randevuları ayırt eder.
-- **Mood Analizi**: Etkinliğin ruhuna göre (Sarkastik, Neşeli, Ciddi vb.) mod belirler.
-- **AI Tasarım**: Google Imagen ve Gemini kullanarak minimalist, sticker tarzı görseller ve uyumlu mesajlar üretir.
-- **Okunabilir Tasarım**: Yumuşak gölgeli, Türkçe karakter destekli modern tipografi.
+- **Google Calendar Integration**: Automatically fetches and prioritizes upcoming events.
+- **AI-Powered Design**: Uses Google Gemini to determine the "mood" of an event (e.g., Sarcastic, Cheerful, Serious) and generates matching text.
+- **Custom Illustrations**: Generates unique, minimalist sticker-style artwork using Google Imagen.
+- **Dynamic Typography**: Selects and downloads Google Fonts that match the event's mood.
+- **Secure Handling**: Encrypted session management for sensitive API keys.
 
-## Kurulum (local)
+## Deployment & Setup
 
-1. Gereksinimleri yükleyin:
+### Prerequisites
+
+- Python 3.10+
+- Google Cloud Project with the following APIs enabled:
+    - Google Calendar API
+    - Google Gemini API (Vertex AI or AI Studio)
+
+### Local Development
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/iCalendarPaper.git
+   cd iCalendarPaper
+   ```
+
+2. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
 
-2. Google Cloud Console'dan `credentials.json` (OAuth Client ID) dosyanızı alın ve ana dizine koyun.
-   - Gerekli API'ler: Google Calendar API, Google Gemini API.
+3. **Configure Environment:**
+   Place your Google Cloud OAuth 2.0 Client ID file as `credentials.json` in the project root.
+   *(Note: This file is sensitive and excluded from the repository. You must generate your own via Google Cloud Console.)*
 
-3. Uygulamayı başlatın:
+4. **Run the application:**
    ```bash
    python runserver.py
    ```
+   Visit `http://localhost:5000` in your browser.
 
-4. Tarayıcıda `http://localhost:5000` adresine gidin.
+### Deployment (Render.com)
 
-## Dosya Yapısı
+1. **New Web Service:** Connect your GitHub repository to Render.
+2. **Runtime:** Select `Python 3`.
+3. **Build Command:** `pip install -r requirements.txt`
+4. **Start Command:** `gunicorn runserver:app`
+5. **Environment Variables:**
+   - `PYTHON_VERSION`: `3.10.0`
+   - `FLASK_SECRET_KEY`: (Generate a strong random string)
+   - `ICALENDAR_SECRET_KEY`: (Generate a strong random string for session encryption)
+   - `OAUTHLIB_INSECURE_TRANSPORT`: `1` (Only if testing HTTP, otherwise remove for Production HTTPS)
 
-- `iCalendarPaper/views.py`: Ana mantık, AI promptları ve görsel işleme.
-- `requirements.txt`: Gerekli kütüphaneler.
-- `sessions.json`: Kullanıcı oturum verileri (temiz başlar).
+## Project Structure
 
-## Açıklama - Önizleme ve deneyim adresi:
+- `iCalendarPaper/`: Core application package.
+  - `views.py`: Main application logic, AI prompting, and image processing.
+  - `models.py`: Database models for session management.
+  - `templates/`: HTML templates (Single Page Application design).
+  - `static/`: Static assets and font cache.
+- `runserver.py`: Application entry point.
+- `Procfile`: Process file for deployment platforms like Render/Heroku.
 
+## License
 
-Çalışma süreci şu şekilde özetleyebiliriz. 
-
-🌐 Kullanıcı Tarafı (Web Arayüzü)
-
--Kullanıcı siteye girer: https://icalwalpap.onrender.com
-
--iPhone modelini seçer: Ekran çözünürlüğü belirlenir (örn: 1179x2556)
-
--Gemini API Key'ini girer: Kullanıcı kendi API anahtarını kullanır
-
--Google Takvim'e bağlanır:
-
--"TAKVİME BAĞLAN" butonuna tıklar
-
--Google OAuth popup açılır
-
--Kullanıcı izin verir
-
--OAuth token alınır ve saklanır
-
--Master Link oluşturur:
-
--Tüm bilgiler (çözünürlük, API key, OAuth token) sunucuya kaydedilir
-
--Benzersiz bir session ID oluşturulur
-
--Master Link kullanıcıya verilir: https://icalwalpap.onrender.com/generate/[session-id]
-
-📱 iOS Shortcuts Tarafı (Otomatik Çalışma)
-
-*Shortcuts linki çağırır: Her gün belirlenen saatte /generate/[session-id] adresine istek atar
-
-*Sunucu takvimi çeker:
-
-*Google Calendar API ile 30 günlük etkinlikler alınır
-
-*Başlık, konum, açıklama, tarih bilgileri çıkarılır
-
-*24 saat kuralı uygulanır:
-
-*Eğer bir etkinlik 24 saat içindeyse → O etkinliğe odaklanılır
-
-*Değilse → Gemini en önemli etkinliği seçer
-
-*Gemini analiz yapar:
-
-*Etkinlik türünü belirler (doğum günü, toplantı, randevu vb.)
-
-*Mood seçer (dark_humor, sarcastic, cheerful vb.)
-
-*Türkçe mesaj yazar (max 12 kelime)
-
-*Sticker konsepti oluşturur (İngilizce)
-
-*Uygun Google Font önerir
-
-*Imagen görsel üretir:
-
-*Sticker tarzı minimalist görsel oluşturulur
-
-*Beyaz arka plan, ince çizgili tasarım
-
-*9:16 dikey format (telefon wallpaper)
-
-*PIL ile metin eklenir:
-
-*Google Font indirilir
-
-*Türkçe mesaj görselin alt kısmına yazılır
-
-*Gölge efekti eklenir
-
-*JPEG olarak döndürülür:
-
-*iOS Shortcuts görseli alır
-
-*Wallpaper olarak ayarlar
-
-
-
-https://icalwalpap.onrender.com üzerinden deneyimleyebilirsiniz.
-
-Not: Domain , api vs.. her şey tamamen ücretsiz olduğundan bazı kısıtlılıklar mevcut olabilir. Örneğin yanıt süresi geç olduğu için kestirmelere eklenen duvar kağıdı yap otomasyonu bazen sorun çıkarabiliyor. bunu aşmak için ilk olarak urlden başlığı al deyip ardından bekle komutu uygulayıp 10-15 sn bekledikten sonra url içeriğini al ve url içeriğini duvar kağıdı olarak ayarla şeklinde uyguladım. teknik olarak yapmak istediğim proje çalışıyor. sadece bunun için ödeme yapmak istemediğimden bu şekilde bir süreç yaşanmakta. ilhamı https://thelifecalendar.com/ 'dan aldım. maksadım neler yapılabileceğini ve bunu nasıl geliştrebileceğimizi görmekti. tüm kodlar yapay zekaya yazdırıldı. ben sadece yönlendirmelerde bulundum. ilgilenen arkadaşlar olursa credits vererek tüm fikri ve kodları gönül rahatlığıyla alabilir, kopyalayabilir, çoğaltıp geiştirebilir. beni de hatırlayın yeter :) 
-Teşekkürler!
+This project is open source and available under the [MIT License](LICENSE).

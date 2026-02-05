@@ -1,11 +1,33 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyo
+
+# IDE
 .vs/
-obj/
+.vscode/
+.idea/
+*.sublime-*
+
+# Virtual Environment
 env/
 venv/
-*.log
+.env
+
+# OS
 .DS_Store
+Thumbs.db
+*.log
+
+# Sensitive Files - NEVER COMMIT
 credentials.json
 sessions.json
+
+# Font Cache (auto-generated)
+static/fonts/cache/
+
+# Temporary files
+*.tmp
+*.bak
+obj/
