@@ -40,8 +40,32 @@ FONT_CACHE_DIR = os.path.join(BASE_DIR, "static", "fonts", "cache")
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
 # Development için localhost HTTP'ye izin ver (production'da HTTPS kullan)
-# NOT: Bu satır her zaman aktif, çünkü localhost'ta HTTPS yok
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+
+def get_client_config() -> dict | None:
+    """
+    Environment variables'dan OAuth credentials oku.
+    Fallback: Local development için credentials.json kullan.
+    """
+    client_id = os.environ.get('GOOGLE_CLIENT_ID')
+    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
+    
+    if client_id and client_secret:
+        # Production: Environment variables kullan
+        return {
+            "web": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token"
+            }
+        }
+    elif os.path.exists(CLIENT_SECRETS_FILE):
+        # Local development: credentials.json kullan
+        with open(CLIENT_SECRETS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return None
 
 # Görsel tasarım sabitleri
 MARGIN_RATIO = 0.08  # Ekran genişliğinin %8'i
@@ -348,7 +372,11 @@ def home():
 @app.route('/oauth/init', methods=['POST'])
 def oauth_init():
     """OAuth akışını başlat."""
-    flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
+    client_config = get_client_config()
+    if not client_config:
+        return jsonify({'error': 'OAuth credentials bulunamadı. GOOGLE_CLIENT_ID ve GOOGLE_CLIENT_SECRET ayarlanmalı.'}), 500
+    
+    flow = Flow.from_client_config(client_config, scopes=SCOPES)
     flow.redirect_uri = url_for('oauth_callback', _external=True)
     auth_url, state = flow.authorization_url(access_type='offline', prompt='consent')
     session['oauth_state'] = state
@@ -369,7 +397,11 @@ def oauth_callback():
         </script>""", 403
 
     try:
-        flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
+        client_config = get_client_config()
+        if not client_config:
+            return "OAuth credentials bulunamadı", 500
+        
+        flow = Flow.from_client_config(client_config, scopes=SCOPES)
         flow.redirect_uri = url_for('oauth_callback', _external=True)
         # State'i flow'a manuel olarak set et
         flow.fetch_token(

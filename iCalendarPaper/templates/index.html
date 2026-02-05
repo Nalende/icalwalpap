@@ -316,24 +316,132 @@
             border-bottom: 1px solid #fff;
         }
 
-        /* Mobile Optimization */
+        /* Mobile Optimization - Comprehensive */
         @media (max-width: 768px) {
-            .slider-track {
-                padding-left: 20px;
+            body {
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+                overflow-x: hidden;
             }
 
-            .card-wrapper {
-                width: 85vw;
-                margin-right: 20px;
-                min-height: auto;
+            .header {
+                padding: 16px 20px;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .logo {
+                font-size: 1.25rem;
             }
 
             .nav-pills {
+                display: flex;
+                width: 100%;
+                justify-content: center;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .nav-item {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+                white-space: nowrap;
+            }
+
+            .stage {
+                flex: none;
+                min-height: auto;
+                padding: 20px 0;
+            }
+
+            .slider-track {
+                padding-left: 20px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .card-wrapper {
+                width: calc(100vw - 40px);
+                min-height: auto;
+                margin-right: 0;
+                margin-bottom: 20px;
                 display: none;
             }
 
+            .card-wrapper.active {
+                display: block;
+            }
+
             .glass-card {
-                padding: 32px 24px;
+                padding: 24px 20px;
+                border-radius: 16px;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+                margin-bottom: 8px;
+            }
+
+            p {
+                font-size: 0.9rem;
+                margin-bottom: 20px;
+            }
+
+            select,
+            input {
+                padding: 14px;
+                font-size: 16px; /* iOS zoom prevention */
+                border-radius: 10px;
+            }
+
+            .btn-modern {
+                padding: 14px 24px;
+                font-size: 0.9rem;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .nav-actions {
+                margin-top: 20px;
+            }
+
+            .link-code {
+                font-size: 0.8rem;
+                padding: 12px;
+            }
+
+            .hint-text {
+                font-size: 0.8rem;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .result-box {
+                padding: 10px 0;
+            }
+
+            .step-badge {
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Small phones */
+        @media (max-width: 380px) {
+            .header {
+                padding: 12px 16px;
+            }
+
+            .glass-card {
+                padding: 20px 16px;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            .btn-modern {
+                padding: 12px 20px;
             }
         }
     </style>
