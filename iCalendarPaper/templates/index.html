@@ -321,14 +321,24 @@
             body {
                 height: auto;
                 min-height: 100vh;
+                min-height: 100dvh;
+                /* Dynamic viewport height for mobile browsers */
                 overflow-y: auto;
                 overflow-x: hidden;
+            }
+
+            .app-container {
+                min-height: 100vh;
+                min-height: 100dvh;
+                display: flex;
+                flex-direction: column;
             }
 
             .header {
                 padding: 16px 20px;
                 flex-direction: column;
                 gap: 12px;
+                flex-shrink: 0;
             }
 
             .logo {
@@ -350,32 +360,52 @@
             }
 
             .stage {
-                flex: none;
-                min-height: auto;
-                padding: 20px 0;
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                overflow: visible;
             }
 
             .slider-track {
-                padding-left: 20px;
-                flex-direction: column;
-                align-items: stretch;
+                /* Override desktop slider behavior */
+                display: block !important;
+                padding-left: 0 !important;
+                transform: none !important;
+                /* Disable JS translate */
+                width: 100%;
             }
 
             .card-wrapper {
-                width: calc(100vw - 40px);
+                width: 100%;
                 min-height: auto;
-                margin-right: 0;
-                margin-bottom: 20px;
-                display: none;
+                margin: 0;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+                padding: 0 20px;
             }
 
             .card-wrapper.active {
-                display: block;
+                position: relative;
+                top: auto;
+                transform: none;
+                opacity: 1;
+                pointer-events: auto;
             }
 
             .glass-card {
                 padding: 24px 20px;
                 border-radius: 16px;
+                height: auto;
+                min-height: auto;
+                max-height: none;
             }
 
             h2 {
@@ -391,7 +421,8 @@
             select,
             input {
                 padding: 14px;
-                font-size: 16px; /* iOS zoom prevention */
+                font-size: 16px;
+                /* iOS zoom prevention */
                 border-radius: 10px;
             }
 
@@ -407,7 +438,7 @@
             }
 
             .link-code {
-                font-size: 0.8rem;
+                font-size: 0.75rem;
                 padding: 12px;
             }
 
@@ -423,6 +454,31 @@
 
             .step-badge {
                 font-size: 0.7rem;
+            }
+        }
+
+        /* Landscape mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .stage {
+                padding: 10px 20px;
+            }
+
+            .glass-card {
+                padding: 16px 20px;
+            }
+
+            h2 {
+                font-size: 1.2rem;
+                margin-bottom: 6px;
+            }
+
+            p {
+                font-size: 0.85rem;
+                margin-bottom: 12px;
+            }
+
+            .nav-actions {
+                margin-top: 12px;
             }
         }
 
